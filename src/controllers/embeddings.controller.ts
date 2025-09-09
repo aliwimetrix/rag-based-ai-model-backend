@@ -1,5 +1,16 @@
 import type { Request, Response } from "express";
 import { EmbeddingsModel } from "../models/embeddings.model.js";
+import dayjs from "dayjs";
+
+const getDetails = async (req: Request, res: Response) => {
+  const response = await EmbeddingsModel.distinct("FileName");
+  const data = {
+    filesCount: response.length,
+    filesName: response.length > 0 ? response : "N/A",
+    refreshedAt: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+  };
+  return res.status(200).json({ ...data });
+};
 
 const createEmbeddings = async (req: Request, res: Response) => {
   try {
@@ -59,21 +70,41 @@ const searchEmbeddings = async (req: Request, res: Response) => {
         },
       },
     ]);
-    const groq = req.app.get('groq')
+    const groq = req.app.get("groq");
     const query = response.map((item) => {
       const { Embeddings, ...rest } = item;
       return rest;
     });
     const result = await groq.chat.completions.create({
       model: "gemma2-9b-it",
-      messages: [{ role: "user", content: `Here is the data: ${JSON.stringify(query[0])}\nQuestion: ${data}?` }],
+      messages: [
+        {
+          role: "user",
+          content: `Here is the data: ${JSON.stringify(
+            query[0]
+          )}\nQuestion: ${data}?`,
+        },
+      ],
       temperature: 1,
-      max_completion_tokens: 512
+      max_completion_tokens: 512,
     });
-    return res.status(200).json({ response: result.choices[0]?.message.content });
+    return res
+      .status(200)
+      .json({ response: result.choices[0]?.message.content });
   } catch (error) {
     return res.status(500).json(error);
   }
 };
 
-export { createEmbeddings, storeEmbeddings, searchEmbeddings };
+const deleteEmbeddings = async (req: Request, res: Response) => {
+  await EmbeddingsModel.deleteMany({});
+  return res.status(200).json({ message: "Deleted Successfully!" });
+};
+
+export {
+  getDetails,
+  createEmbeddings,
+  storeEmbeddings,
+  searchEmbeddings,
+  deleteEmbeddings,
+};
