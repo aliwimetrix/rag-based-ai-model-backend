@@ -76,12 +76,12 @@ const searchEmbeddings = async (req: Request, res: Response) => {
       return rest;
     });
     const result = await groq.chat.completions.create({
-      model: "gemma2-9b-it",
+      model: "llama-3.3-70b-versatile",
       messages: [
         {
           role: "user",
           content: `Here is the data: ${JSON.stringify(
-            query[0]
+            query
           )}\nQuestion: ${data}?`,
         },
       ],
