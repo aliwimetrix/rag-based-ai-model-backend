@@ -15,9 +15,8 @@ const getDashboard = async (req: Request, res: Response) => {
   const filledDashboards = matchedDashboards.map((item) =>
     getDashboardSchema(item.dashboardName!)
   );
-  setTimeout(() => {
+
     return res.send(filledDashboards);
-  }, 10000);
 };
 
 export { getDashboard };
